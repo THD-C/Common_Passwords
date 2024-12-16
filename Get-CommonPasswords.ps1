@@ -1,7 +1,10 @@
 $URL = "https://cert.pl/uploads/2022/01/hasla/resources/wordlist_pl.zip"
 $FILENAME = [System.IO.Path]::GetFileName($URL)
-$OUTPUT_JSON_FILE_NAME = "common_passwords.json"
+$OUTPUT_JSON_FILE_NAME = "common_passwords"
 $OUTPUT_DIR = "./passwords"
+$MAX_ENTRIES_PER_SET = 10000
+$MAX_SETS_PER_FILE = 10
+
 
 function Invoke-Main {
     Invoke-ArchiveDownload
@@ -41,18 +44,46 @@ function Invoke-ConversionToJSON {
     $outputPath = "$OUTPUT_DIR/$OUTPUT_JSON_FILE_NAME"
 
     if (-Not (Test-Path -Path $OUTPUT_DIR)) {
-        New-Item -Path $OUTPUT_DIR -ItemType Directory
+        $null = New-Item -Path $OUTPUT_DIR -ItemType Directory
     }
 
-    $passwords = Get-Content -Path $inputPath | ForEach-Object { $_.Trim() }
-    $json = @{ passwords = $passwords } | ConvertTo-Json -Depth 2
+    $passwords = Get-Content -Path $inputPath
+    $FileNumber = 0
+    $SetNumber = 0
+    $index = 0
+    while ($index -lt $passwords.Count) {
+        $JSON_STRUCT = New-Object System.Collections.ArrayList
 
-    if (-Not (Test-Path -Path $OUTPUT_DIR)) {
-        $null = New-Item -ItemType Directory -Path $OUTPUT_DIR
+        for ($i = 0; $i -lt $MAX_SETS_PER_FILE; $i++) {
+            $result = Get-PasswordsSet -WordsList $passwords -index $index
+            $index = $result.index
+            $PasswordsList = $result.passwords
+            $null = $JSON_STRUCT.Add(@{"cert_pl_$SetNumber" = $PasswordsList})
+            $SetNumber++
+        }
+        $JSON_STRUCT | ConvertTo-Json -Depth 3 | Out-File -FilePath "$($outputPath)_$FileNumber.json" -Encoding utf8
+        $FileNumber++
     }
-
-    $json | Out-File -FilePath $outputPath -Encoding utf8
     Write-Host "Conversion to JSON complete."
+}
+
+function Get-PasswordsSet {
+    param(
+        $WordsList,
+        $index
+    )
+    $list = New-Object System.Collections.ArrayList
+    for ($i = $index; ($i - $index) -lt $MAX_ENTRIES_PER_SET; $i++) {
+        $pass = $WordsList[$i]
+        try {
+            $null = $list.Add($pass.Trim())
+        }
+        catch {}
+    }
+    return @{
+        "index" = $i
+        "passwords" = $list
+    }
 }
 
 Invoke-Main
