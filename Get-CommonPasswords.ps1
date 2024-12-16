@@ -48,7 +48,7 @@ function Invoke-ConversionToJSON {
     $json = @{ passwords = $passwords } | ConvertTo-Json -Depth 2
 
     if (-Not (Test-Path -Path $OUTPUT_DIR)) {
-        New-Item -ItemType Directory -Path $OUTPUT_DIR
+        $null = New-Item -ItemType Directory -Path $OUTPUT_DIR
     }
 
     $json | Out-File -FilePath $outputPath -Encoding utf8
