@@ -62,7 +62,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -H "Content-Type: application/octet-stream" \
-            --url "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get-release.outputs.release_id }}/assets?name=${{ steps.create-archive.outputs.archive_name }}" \
+            --url "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get-release.outputs.release_id }}/assets?name=${{vars.ARTIFACT_NAME_COMMON_PASSWORDS}}" \
             --data-binary "@${{vars.ARTIFACT_NAME_COMMON_PASSWORDS}}"
     
       - name: Remove archive from disk
