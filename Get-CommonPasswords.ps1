@@ -2,8 +2,8 @@ $URL = "https://cert.pl/uploads/2022/01/hasla/resources/wordlist_pl.zip"
 $FILENAME = [System.IO.Path]::GetFileName($URL)
 $OUTPUT_JSON_FILE_NAME = "common_passwords"
 $OUTPUT_DIR = "./passwords"
-$MAX_ENTRIES_PER_SET = 10000
-$MAX_SETS_PER_FILE = 10
+$MAX_ENTRIES_PER_SET = 100
+$MAX_SETS_PER_FILE = 1000
 
 
 function Invoke-Main {
@@ -58,7 +58,7 @@ function Invoke-ConversionToJSON {
             $result = Get-PasswordsSet -WordsList $passwords -index $index
             $index = $result.index
             $PasswordsList = $result.passwords
-            $null = $JSON_STRUCT.Add(@{"cert_pl_$SetNumber" = $PasswordsList})
+            $null = $JSON_STRUCT.Add(@{"cert_pl" = $PasswordsList})
             $SetNumber++
         }
         $JSON_STRUCT | ConvertTo-Json -Depth 3 | Out-File -FilePath "$($outputPath)_$FileNumber.json" -Encoding utf8
